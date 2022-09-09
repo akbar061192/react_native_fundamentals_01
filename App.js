@@ -1,71 +1,60 @@
+import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, FlatList, Button } from 'react-native';
+import GoalInput from './components/GoalInput';
+import GoalItem from './components/GoalItem';
 
 const App = () => {
-  const [newGoal, setNewGoal] = useState('');
   const [goals, setGoals] = useState([]);
+  const [showModal, setShowModal] = useState(false);
 
-  const goalInputHandler = enteredValue => {
-    setNewGoal(enteredValue);
+  const addNewGoal = userGoal => {
+    setGoals(prevState => [...prevState, { id: Math.random().toFixed(5) * 10, goal: userGoal }]);
+    setShowModal(false);
   };
 
-  const addNewGoal = () => {
-    setGoals(prevState => [...prevState, { id: Math.random().toFixed(5) * 10, goal: newGoal }]);
-    setNewGoal('');
+  const deleteItem = id => {
+    const filteredGoals = goals.filter(goal => goal.id !== id);
+    setGoals(filteredGoals);
+  };
+
+  const displayModal = () => {
+    setShowModal(true);
+  };
+
+  const hideModal = () => {
+    setShowModal(false);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.inputBtnContainer}>
-        <TextInput style={styles.textInput} placeholder='Enter new goal' value={newGoal} onChangeText={goalInputHandler} />
-        <Button title='Add Goal' onPress={addNewGoal} />
+    <>
+      <StatusBar style='auto' />
+
+      <View style={styles.container}>
+        <Button title='Add new goal' onPress={displayModal} />
+        <GoalInput addNewGoal={addNewGoal} showModal={showModal} hideModal={hideModal} />
+        <View style={styles.goalsListContainer}>
+          <FlatList
+            data={goals}
+            renderItem={data => {
+              return <GoalItem data={data.item} deleteItem={deleteItem} />;
+            }}
+            keyExtractor={item => item.id}
+          />
+        </View>
       </View>
-      <View style={styles.goalsListContainer}>
-        <ScrollView>
-          {goals.map(goal => {
-            return (
-              <View style={styles.goal} key={goal.id}>
-                <Text>{goal.goal}</Text>
-              </View>
-            );
-          })}
-        </ScrollView>
-      </View>
-    </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 50,
-    marginHorizontal: 16,
-  },
-  inputBtnContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-  },
-  textInput: {
-    width: '70%',
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderStyle: 'solid',
-    padding: 10,
-    marginRight: 10,
+    paddingTop: 70,
+    marginHorizontal: 24,
   },
   goalsListContainer: {
     flex: 5,
-  },
-  goal: {
-    margin: 12,
-    padding: 10,
-    backgroundColor: 'lightblue',
-    borderRadius: 5,
   },
 });
 
